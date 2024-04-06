@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import numberService from "./services/numbers.js";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -8,8 +9,7 @@ const App = () => {
 
   useEffect(() => {
     async function getData() {
-      const response = await fetch("http://localhost:3001/persons");
-      const data = await response.json();
+      const data = await numberService.getAll();
       console.log(data, "RESPONSE");
       setPersons(data);
     }
@@ -27,7 +27,7 @@ const App = () => {
     setFilterText(event.target.value);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     let isDuplicate = false;
 
@@ -43,12 +43,19 @@ const App = () => {
     // If newName is a duplicate, return without adding it to the list
     if (isDuplicate) {
       setNewName("");
+
       return;
     }
 
     // If newName is not a duplicate, add it to the list
-    setPersons([...persons, { name: newName, number: number }]);
+    const newPerson = await numberService.create({
+      name: newName,
+      number: number,
+    });
+    setPersons([...persons, newPerson]);
+
     setNewName("");
+    setNumber("");
   }
 
   const filteredPersons = persons?.filter((person) => {
