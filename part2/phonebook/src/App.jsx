@@ -14,7 +14,7 @@ const App = () => {
       setPersons(data);
     }
     getData();
-  }, []);
+  }, [persons]);
 
   function handleNameChange(e) {
     setNewName(e.target.value);
@@ -34,16 +34,34 @@ const App = () => {
     // Check if newName is already in the list
     persons.forEach((person) => {
       if (person.name === newName) {
-        alert(`${newName} is already added to phonebook`);
         isDuplicate = true; // Set flag to true if newName is a duplicate
+
         return;
       }
     });
 
     // If newName is a duplicate, return without adding it to the list
     if (isDuplicate) {
-      setNewName("");
+      const answer = confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
 
+      if (answer) {
+        const existingPerson = persons.find(
+          (person) => person.name === newName
+        );
+        const updatedPerson = numberService.update(existingPerson.id, {
+          name: newName,
+          number: number,
+        });
+        setPersons(
+          persons.map((person) =>
+            person.id === updatedPerson.id ? updatedPerson : person
+          )
+        );
+      }
+      setNewName("");
+      setNumber("");
       return;
     }
 
@@ -56,6 +74,12 @@ const App = () => {
 
     setNewName("");
     setNumber("");
+  }
+
+  function handleDelete(id) {
+    const updatedPersons = persons.filter((person) => person.id !== id);
+    setPersons(updatedPersons);
+    numberService.deletePerson(id);
   }
 
   const filteredPersons = persons?.filter((person) => {
@@ -87,6 +111,7 @@ const App = () => {
         <p key={person.id}>
           {person.name}
           {person.number}
+          <button onClick={() => handleDelete(person.id)}>Delete</button>
         </p>
       ))}
     </div>
