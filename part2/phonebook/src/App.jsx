@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import numberService from "./services/numbers.js";
+import Notification from "./components/Notification.jsx";
+import "./App.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [number, setNumber] = useState("");
   const [filterText, setFilterText] = useState("");
+  const [notification, setNotification] = useState("");
 
   useEffect(() => {
     async function getData() {
@@ -14,7 +17,7 @@ const App = () => {
       setPersons(data);
     }
     getData();
-  }, [persons]);
+  }, []);
 
   function handleNameChange(e) {
     setNewName(e.target.value);
@@ -47,18 +50,22 @@ const App = () => {
       );
 
       if (answer) {
-        const existingPerson = persons.find(
-          (person) => person.name === newName
-        );
-        const updatedPerson = numberService.update(existingPerson.id, {
-          name: newName,
-          number: number,
-        });
-        setPersons(
-          persons.map((person) =>
-            person.id === updatedPerson.id ? updatedPerson : person
-          )
-        );
+        try {
+          const existingPerson = persons.find(
+            (person) => person.name === newName
+          );
+          const updatedPerson = numberService.update(existingPerson.id, {
+            name: newName,
+            number: number,
+          });
+          setPersons(
+            persons.map((person) =>
+              person.id === updatedPerson.id ? updatedPerson : person
+            )
+          );
+        } catch (error) {
+          console.log(error, "ERROR RELATED TO NO PERSON");
+        }
       }
       setNewName("");
       setNumber("");
@@ -71,7 +78,10 @@ const App = () => {
       number: number,
     });
     setPersons([...persons, newPerson]);
-
+    setNotification(`Added '${newPerson.name}'`);
+    setTimeout(() => {
+      setNotification(null);
+    }, 2000);
     setNewName("");
     setNumber("");
   }
@@ -89,6 +99,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification} />
       <p>
         filter shown with{" "}
         <input type="text" onChange={handleFilterChange} value={filterText} />
